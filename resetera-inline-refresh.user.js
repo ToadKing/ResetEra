@@ -33,7 +33,7 @@ const SPINNER_CSS = `
 
 @keyframes spin2win {
   from {
-      transform: rotate(0deg);
+    transform: rotate(0deg);
   }
 
   to {
