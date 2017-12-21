@@ -2,7 +2,7 @@
 // @name        ResetEra Inline Refresh
 // @description Load new posts in a topic without refreshing the whole page
 // @namespace   com.toadking.resetera.inlinerefresh
-// @version     0.4
+// @version     0.5
 // @grant       none
 // @include     https://www.resetera.com/threads/*
 // @run-at      document-end
