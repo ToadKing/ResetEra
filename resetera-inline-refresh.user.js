@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        ResetEra Inline Refresh
 // @description Load new posts in a topic without refreshing the whole page
-// @namespace   com.toadking.resetera
+// @namespace   com.toadking.resetera.inlinerefresh
 // @version     0.4
 // @grant       none
 // @include     https://www.resetera.com/threads/*
@@ -89,17 +89,13 @@ function Insert_New_Posts(req) {
     }
   }
 
-  Load_Done();
-}
-
-function Load_Done() {
-  doing_refresh = false;
-
   let refresh_icons = document.querySelectorAll(RELOAD_ICON_SELECTOR);
 
   for (let icon of refresh_icons) {
     icon.classList.remove(SPINNER_CLASS);
   }
+
+  doing_refresh = false;
 }
 
 function Inline_Reload(e) {
