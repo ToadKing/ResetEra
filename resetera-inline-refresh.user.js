@@ -2,7 +2,7 @@
 // @name        ResetEra Inline Refresh
 // @description Load new posts in a topic without refreshing the whole page
 // @namespace   com.toadking.resetera.inlinerefresh
-// @version     0.5
+// @version     0.6
 // @grant       none
 // @include     https://www.resetera.com/threads/*
 // @run-at      document-end
@@ -17,6 +17,7 @@ const PAGENAV_SELECTOR = ".PageNav";
 const PAGENAV_GROUP_SELECTOR = ".pageNavLinkGroup";
 const HIGHLIGHT_SCRIPT_SIGNATURE = `$('.bbCodeQuote[data-author="`;
 const XENFORO_ACTIVATE_SCRIPT = "XenForo.activate(document);";
+const REFRESH_KEY = "r";
 
 const SPINNER_CSS = `
 .${SPINNER_CLASS} {
@@ -117,6 +118,30 @@ function Inline_Reload(e) {
   }
 }
 
+function Handle_Reload_Keypress(e) {
+  let target = e.target;
+  let nodeName = target.nodeName.toUpperCase();
+
+  // skip it if we're typing something
+  if (target.isContentEditable || nodeName === "TEXTAREA" || nodeName === "INPUT") {
+    return;
+  }
+
+  // skip repeating keys
+  if (e.repeat) {
+    return;
+  }
+
+  // skip if we're holding modifiers
+  if (e.altKey || e.ctrlKey || e.shiftKey || e.metaKey) {
+    return;
+  }
+
+  if (e.key === REFRESH_KEY) {
+    Inline_Reload(e);
+  }
+}
+
 let reload_links = document.querySelectorAll(REFRESH_LINK_SELECTOR);
 
 if (reload_links.length > 0) {
@@ -127,4 +152,7 @@ if (reload_links.length > 0) {
   for (let link of reload_links) {
     link.addEventListener("click", Inline_Reload, false);
   }
+
+  // chrome doesn't set the repeat event property on keypress events, have to use keydown
+  document.addEventListener("keydown", Handle_Reload_Keypress, false);
 }
