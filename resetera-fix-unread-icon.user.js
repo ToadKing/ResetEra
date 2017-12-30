@@ -2,7 +2,7 @@
 // @name        ResetEra Fix Unread Icon
 // @description Repositions the jump to unread post icon and makes it easier to hit on mobile.
 // @namespace   com.toadking.resetera.unreadicon
-// @version     0.1
+// @version     0.2
 // @grant       none
 // @include     https://www.resetera.com/forums/*
 // @run-at      document-start
@@ -20,4 +20,6 @@ const ICON_STYLE = `
 
 let style = document.createElement("style");
 style.textContent = ICON_STYLE;
-document.head.appendChild(style);
+
+// sometimes document-start fires before <head> exists so just apply it to the document element
+document.documentElement.appendChild(style);
