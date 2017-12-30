@@ -2,7 +2,7 @@
 // @name        ResetEra Inline Refresh
 // @description Load new posts in a topic without refreshing the whole page
 // @namespace   com.toadking.resetera.inlinerefresh
-// @version     0.7
+// @version     0.8
 // @grant       none
 // @include     https://www.resetera.com/threads/*
 // @run-at      document-end
@@ -17,6 +17,7 @@ const PAGENAV_SELECTOR = ".PageNav";
 const PAGENAV_GROUP_SELECTOR = ".pageNavLinkGroup";
 const HIGHLIGHT_SCRIPT_SIGNATURE = `$('.bbCodeQuote[data-author="`;
 const XENFORO_ACTIVATE_SCRIPT = "XenForo.activate(document);";
+const SCRIPTS_SELECTOR = "script:not(:empty)";
 const REFRESH_KEY = "r";
 
 const SPINNER_CSS = `
@@ -80,7 +81,7 @@ function Insert_New_Posts(req) {
     window.eval(XENFORO_ACTIVATE_SCRIPT);
 
     // apply the quote highlighting script again for new posts
-    let page_scripts = document.querySelectorAll("script:not(:empty)");
+    let page_scripts = document.querySelectorAll(SCRIPTS_SELECTOR);
 
     for (let script of page_scripts) {
       if (script.textContent.includes(HIGHLIGHT_SCRIPT_SIGNATURE)) {
