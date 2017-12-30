@@ -2,7 +2,7 @@
 // @name        ResetEra Topic Link to Unread
 // @description Makes the topic title link to the first unread post instead of the first post.
 // @namespace   com.toadking.resetera.unreadlink
-// @version     0.3
+// @version     0.4
 // @grant       none
 // @include     https://www.resetera.com/forums/*
 // @run-at      document-end
@@ -12,10 +12,13 @@ const TOPICS_SELECTOR = ".discussionListItems .discussionListItem";
 const TOPIC_LINK_SELECTOR = ".title a:not(.unreadLink)";
 const UNREAD = "unread";
 const POSTER_LINE_SELECTOR = ".posterDate";
+const PAGENAV_ELEMENT = "span";
 const PAGENAV_CLASS = "itemPageNav";
 const PAGENAV_SELECTOR = `.${PAGENAV_CLASS}`;
 const FIRST_PAGE_TEXT = "1";
 const FIRST_PAGE_CLASS = "firstPage";
+const PAGE_TWO_SELECTOR = 'a[href$="/page-2"]';
+const ELLIPSES_SELECTOR = 'span';
 
 const FIRST_PAGE_CSS = `
 body .itemPageNav a.${FIRST_PAGE_CLASS} {
@@ -35,7 +38,7 @@ function Fix_Topic_Link(topic) {
 
     // one page topic, add our own pagenav
     if (pageNav === null) {
-      pageNav = document.createElement("span");
+      pageNav = document.createElement(PAGENAV_ELEMENT);
       pageNav.classList.add(PAGENAV_CLASS);
       topic.querySelector(POSTER_LINE_SELECTOR).appendChild(pageNav);
     }
@@ -48,6 +51,11 @@ function Fix_Topic_Link(topic) {
     // because pageNav.firstChild might not exist, don't use the new ChildNode methods
     pageNav.insertBefore(document.createTextNode(" "), pageNav.firstChild);
     pageNav.insertBefore(first_post_link, pageNav.firstChild);
+
+    // remove "..." if we have a link to page 2
+    if (pageNav.querySelector(PAGE_TWO_SELECTOR) != null) {
+      pageNav.querySelector(ELLIPSES_SELECTOR).remove();
+    }
   }
 }
 
