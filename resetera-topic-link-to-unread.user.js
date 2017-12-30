@@ -2,7 +2,7 @@
 // @name        ResetEra Topic Link to Unread
 // @description Makes the topic title link to the first unread post instead of the first post.
 // @namespace   com.toadking.resetera.unreadlink
-// @version     0.2
+// @version     0.3
 // @grant       none
 // @include     https://www.resetera.com/forums/*
 // @run-at      document-end
@@ -44,6 +44,8 @@ function Fix_Topic_Link(topic) {
     first_post_link.classList.add(FIRST_PAGE_CLASS);
     first_post_link.href = topic_url;
     first_post_link.textContent = FIRST_PAGE_TEXT;
+
+    // because pageNav.firstChild might not exist, don't use the new ChildNode methods
     pageNav.insertBefore(document.createTextNode(" "), pageNav.firstChild);
     pageNav.insertBefore(first_post_link, pageNav.firstChild);
   }

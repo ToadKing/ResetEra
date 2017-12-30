@@ -2,7 +2,7 @@
 // @name        ResetEra Inline Refresh
 // @description Load new posts in a topic without refreshing the whole page
 // @namespace   com.toadking.resetera.inlinerefresh
-// @version     0.6
+// @version     0.7
 // @grant       none
 // @include     https://www.resetera.com/threads/*
 // @run-at      document-end
@@ -71,7 +71,7 @@ function Insert_New_Posts(req) {
         if (pagenav === null) {
           group.appendChild(new_pagenav_dup);
         } else {
-          pagenav.parentNode.replaceChild(new_pagenav_dup, pagenav);
+          pagenav.replaceWith(new_pagenav_dup);
         }
       }
     }
