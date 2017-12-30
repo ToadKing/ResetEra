@@ -2,7 +2,7 @@
 // @name        ResetEra Topic Link to Unread
 // @description Makes the topic title link to the first unread post instead of the first post.
 // @namespace   com.toadking.resetera.unreadlink
-// @version     0.1
+// @version     0.2
 // @grant       none
 // @include     https://www.resetera.com/forums/*
 // @run-at      document-end
@@ -14,7 +14,14 @@ const UNREAD = "unread";
 const POSTER_LINE_SELECTOR = ".posterDate";
 const PAGENAV_CLASS = "itemPageNav";
 const PAGENAV_SELECTOR = `.${PAGENAV_CLASS}`;
-const FIRST_PAGE = "First Page";
+const FIRST_PAGE_TEXT = "1";
+const FIRST_PAGE_CLASS = "firstPage";
+
+const FIRST_PAGE_CSS = `
+body .itemPageNav a.${FIRST_PAGE_CLASS} {
+  margin-left: 3px;
+}
+`;
 
 function Fix_Topic_Link(topic) {
   let title_link = topic.querySelector(TOPIC_LINK_SELECTOR);
@@ -34,8 +41,9 @@ function Fix_Topic_Link(topic) {
     }
 
     let first_post_link = document.createElement("a");
+    first_post_link.classList.add(FIRST_PAGE_CLASS);
     first_post_link.href = topic_url;
-    first_post_link.textContent = FIRST_PAGE;
+    first_post_link.textContent = FIRST_PAGE_TEXT;
     pageNav.insertBefore(document.createTextNode(" "), pageNav.firstChild);
     pageNav.insertBefore(first_post_link, pageNav.firstChild);
   }
@@ -43,6 +51,13 @@ function Fix_Topic_Link(topic) {
 
 let topics = document.querySelectorAll(TOPICS_SELECTOR);
 
-for (let topic of topics) {
-  Fix_Topic_Link(topic);
+if (topics.length > 0)
+{
+  let first_page_css_node = document.createElement("style");
+  first_page_css_node.textContent = FIRST_PAGE_CSS;
+  document.head.appendChild(first_page_css_node);
+
+  for (let topic of topics) {
+    Fix_Topic_Link(topic);
+  }
 }
