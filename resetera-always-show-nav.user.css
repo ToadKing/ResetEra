@@ -1,0 +1,15 @@
+/* ==UserStyle==
+@name        ResetEra PageNav Always Visible
+@namespace   com.toadking.resetera.pagenav
+@version     0.1
+@description Makes the page navigation always visible and never fades away.
+==/UserStyle== */
+
+@-moz-document domain('www.resetera.com')
+{
+  .pagenav-actions
+  {
+    display: flex !important;
+    opacity: 1 !important;
+  }
+}

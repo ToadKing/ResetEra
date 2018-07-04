@@ -1,0 +1,15 @@
+/* ==UserStyle==
+@name        ResetEra No Post Animation
+@namespace   com.toadking.resetera.postanim
+@version     0.1
+@description Do not animate posts on page load.
+==/UserStyle== */
+
+@-moz-document domain('www.resetera.com')
+{
+  .message
+  {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}

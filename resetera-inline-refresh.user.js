@@ -2,13 +2,14 @@
 // @name        ResetEra Inline Refresh
 // @description Load new posts in a topic without refreshing the whole page
 // @namespace   com.toadking.resetera.inlinerefresh
-// @version     0.8
+// @version     1.0
 // @grant       none
 // @include     https://www.resetera.com/threads/*
 // @run-at      document-end
 // ==/UserScript==
 
-const REFRESH_LINK_SELECTOR = 'a[href^="javascript:window.location.reload"]';
+const OLD_THEME = document.querySelector("#headerProxy") !== null;
+const REFRESH_LINK_SELECTOR = OLD_THEME ? 'a[href^="javascript:window.location.reload"]' : 'a[onclick^="window.location.reload"]';
 const RELOAD_ICON_SELECTOR = `${REFRESH_LINK_SELECTOR} .fa-refresh`;
 const SPINNER_CLASS = "spin2win";
 const MESSAGE_LIST_SELECTOR = "#messageList";
@@ -16,6 +17,7 @@ const MESSAGE_SELECTOR = `${MESSAGE_LIST_SELECTOR} > .message`;
 const PAGENAV_SELECTOR = ".PageNav";
 const PAGENAV_GROUP_SELECTOR = ".pageNavLinkGroup";
 const HIGHLIGHT_SCRIPT_SIGNATURE = `$('.bbCodeQuote[data-author="`;
+const PAGENAV_SCRIPT_SIGNATURE = "var pageNav = $('.pagenav-actions');";
 const XENFORO_ACTIVATE_SCRIPT = "XenForo.activate(document);";
 const SCRIPTS_SELECTOR = "script:not(:empty)";
 const REFRESH_KEY = "r";
@@ -27,9 +29,11 @@ const SPINNER_CSS = `
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 
+` + (OLD_THEME ? `
   /* padding messes with transform, make it margin instead. also try to make the icon a perfect square so it rotates better */
   padding: 0.925px 0;
   margin-right: 4px;
+` : '') + `
 }
 
 @keyframes spin2win {
@@ -74,6 +78,9 @@ function Insert_New_Posts(req) {
         } else {
           pagenav.replaceWith(new_pagenav_dup);
         }
+
+        let reload_links = new_pagenav_dup.querySelectorAll(REFRESH_LINK_SELECTOR);
+        Setup_Reload_Links(reload_links);
       }
     }
 
@@ -84,9 +91,8 @@ function Insert_New_Posts(req) {
     let page_scripts = document.querySelectorAll(SCRIPTS_SELECTOR);
 
     for (let script of page_scripts) {
-      if (script.textContent.includes(HIGHLIGHT_SCRIPT_SIGNATURE)) {
+      if (script.textContent.includes(HIGHLIGHT_SCRIPT_SIGNATURE) || script.textContent.includes(PAGENAV_SCRIPT_SIGNATURE)) {
         window.eval(script.textContent);
-        break;
       }
     }
   }
@@ -143,6 +149,15 @@ function Handle_Reload_Keypress(e) {
   }
 }
 
+function Setup_Reload_Links(reload_links)
+{
+  for (let link of reload_links) {
+    link.addEventListener("click", Inline_Reload, false);
+    // set the onclick attribute so it doens't reload the page but still matches our selector
+    link.setAttribute("onclick", "window.location.reload.name; return false;");
+  }
+}
+
 let reload_links = document.querySelectorAll(REFRESH_LINK_SELECTOR);
 
 if (reload_links.length > 0) {
@@ -150,9 +165,7 @@ if (reload_links.length > 0) {
   spinner_css_node.textContent = SPINNER_CSS;
   document.head.appendChild(spinner_css_node);
 
-  for (let link of reload_links) {
-    link.addEventListener("click", Inline_Reload, false);
-  }
+  Setup_Reload_Links(reload_links);
 
   // chrome doesn't set the repeat event property on keypress events, have to use keydown
   document.addEventListener("keydown", Handle_Reload_Keypress, false);
