@@ -2,38 +2,50 @@
 // @name        ResetEra Inline Refresh
 // @description Load new posts in a topic without refreshing the whole page
 // @namespace   com.toadking.resetera.inlinerefresh
-// @version     1.0
+// @version     2.0
 // @grant       none
 // @include     https://www.resetera.com/threads/*
 // @run-at      document-end
 // ==/UserScript==
 
-const OLD_THEME = document.querySelector("#headerProxy") !== null;
-const REFRESH_LINK_SELECTOR = OLD_THEME ? 'a[href^="javascript:window.location.reload"]' : 'a[onclick^="window.location.reload"]';
-const RELOAD_ICON_SELECTOR = `${REFRESH_LINK_SELECTOR} .fa-refresh`;
+const REFRESH_CLASS = "refreshBtn";
 const SPINNER_CLASS = "spin2win";
-const MESSAGE_LIST_SELECTOR = "#messageList";
+const RELOAD_ICON_SELECTOR = `.${REFRESH_CLASS}`;
+const MESSAGE_LIST_SELECTOR = '[data-lb-id^="thread-"] .block-body';
 const MESSAGE_SELECTOR = `${MESSAGE_LIST_SELECTOR} > .message`;
-const PAGENAV_SELECTOR = ".PageNav";
-const PAGENAV_GROUP_SELECTOR = ".pageNavLinkGroup";
-const HIGHLIGHT_SCRIPT_SIGNATURE = `$('.bbCodeQuote[data-author="`;
-const PAGENAV_SCRIPT_SIGNATURE = "var pageNav = $('.pagenav-actions');";
-const XENFORO_ACTIVATE_SCRIPT = "XenForo.activate(document);";
-const SCRIPTS_SELECTOR = "script:not(:empty)";
+const PAGENAV_SELECTOR = ".pageNavWrapper";
+const PAGENAV_GROUP_SELECTOR = ".block-outer:not(.js-threadStatusField)";
+const OPPOSITE_CLASS = `${PAGENAV_GROUP_SELECTOR} .block-outer-opposite`;
+const BUTTON_GROUP_CLASS = "buttonGroup";
+const BUTTON_GROUP_CLASS_SELECTOR = `.${BUTTON_GROUP_CLASS}`;
+const BUTTON_LINK_CLASSES = ['button--link', 'button', 'rippleButton'];
+const XENFORO_ACTIVATE_SCRIPT = "XF.activate(document);";
 const REFRESH_KEY = "r";
 
 const SPINNER_CSS = `
+.${REFRESH_CLASS} {
+	font-size: 18px;
+}
+
+.${REFRESH_CLASS}::before {
+  display: inline-block;
+  font: normal normal normal 18px/1 "Material Design Icons";
+  line-height: 1;
+  font-size: inherit;
+  text-rendering: auto;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transform: translate(0, 0);
+  width: auto !important;
+  content: '\\f06a';
+}
+
 .${SPINNER_CLASS} {
   animation-name: spin2win;
   animation-duration: 1s;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
-
-` + (OLD_THEME ? `
-  /* padding messes with transform, make it margin instead. also try to make the icon a perfect square so it rotates better */
-  padding: 0.925px 0;
-  margin-right: 4px;
-` : '') + `
 }
 
 @keyframes spin2win {
@@ -50,10 +62,12 @@ const SPINNER_CSS = `
 let doing_refresh = false;
 
 function Insert_New_Posts(req) {
+  doing_refresh = false;
+  
   if (req.responseXML != null) {
-    let fetched_posts = req.responseXML.querySelectorAll(MESSAGE_SELECTOR);
-    let existing_post_ids = Array.from(document.querySelectorAll(MESSAGE_SELECTOR)).map((m) => m.id);
-    let message_list = document.querySelector(MESSAGE_LIST_SELECTOR);
+    const fetched_posts = req.responseXML.querySelectorAll(MESSAGE_SELECTOR);
+    const existing_post_ids = Array.from(document.querySelectorAll(MESSAGE_SELECTOR)).map((m) => m.id);
+    const message_list = document.querySelector(MESSAGE_LIST_SELECTOR);
 
     // only add posts that are not already on the page
     for (let new_post of fetched_posts) {
@@ -63,47 +77,33 @@ function Insert_New_Posts(req) {
     }
 
     // update pagenav
-    let new_pagenav = req.responseXML.querySelector(PAGENAV_SELECTOR);
+    const new_pagenav = req.responseXML.querySelector(PAGENAV_SELECTOR);
 
     // there are two pagenavs on a page but they both have identical contents so just reuse this one on both
-    let existing_pagenavgroups = document.querySelectorAll(PAGENAV_GROUP_SELECTOR);
+    const existing_pagenavgroups = document.querySelectorAll(PAGENAV_GROUP_SELECTOR);
 
     if (new_pagenav != null) {
       for (let group of existing_pagenavgroups) {
-        let new_pagenav_dup = new_pagenav.cloneNode(true);
-        let pagenav = group.querySelector(PAGENAV_SELECTOR);
+        const new_pagenav_dup = new_pagenav.cloneNode(true);
+        const pagenav = group.querySelector(PAGENAV_SELECTOR);
 
         if (pagenav === null) {
           group.appendChild(new_pagenav_dup);
         } else {
           pagenav.replaceWith(new_pagenav_dup);
         }
-
-        let reload_links = new_pagenav_dup.querySelectorAll(REFRESH_LINK_SELECTOR);
-        Setup_Reload_Links(reload_links);
       }
     }
 
     // activate new handlers for new content. uses eval so it runs in the page context. fixes dynamic stuff like multiquotes on new posts/scrolling navbar/other stuff
     window.eval(XENFORO_ACTIVATE_SCRIPT);
-
-    // apply the quote highlighting script again for new posts
-    let page_scripts = document.querySelectorAll(SCRIPTS_SELECTOR);
-
-    for (let script of page_scripts) {
-      if (script.textContent.includes(HIGHLIGHT_SCRIPT_SIGNATURE) || script.textContent.includes(PAGENAV_SCRIPT_SIGNATURE)) {
-        window.eval(script.textContent);
-      }
-    }
   }
 
-  let refresh_icons = document.querySelectorAll(RELOAD_ICON_SELECTOR);
+  const refresh_icons = document.querySelectorAll(RELOAD_ICON_SELECTOR);
 
   for (let icon of refresh_icons) {
     icon.classList.remove(SPINNER_CLASS);
   }
-
-  doing_refresh = false;
 }
 
 function Inline_Reload(e) {
@@ -111,13 +111,13 @@ function Inline_Reload(e) {
 
   if (!doing_refresh) {
     doing_refresh = true;
-    let refresh_icons = document.querySelectorAll(RELOAD_ICON_SELECTOR);
+    const refresh_icons = document.querySelectorAll(RELOAD_ICON_SELECTOR);
 
     for (let icon of refresh_icons) {
       icon.classList.add(SPINNER_CLASS);
     }
 
-    let req = new XMLHttpRequest();
+    const req = new XMLHttpRequest();
     req.addEventListener("loadend", Insert_New_Posts.bind(null, req));
     req.open("GET", window.location.href.split("#")[0]);
     req.responseType = "document";
@@ -126,8 +126,8 @@ function Inline_Reload(e) {
 }
 
 function Handle_Reload_Keypress(e) {
-  let target = e.target;
-  let nodeName = target.nodeName.toUpperCase();
+  const target = e.target;
+  const nodeName = target.nodeName.toUpperCase();
 
   // skip it if we're typing something
   if (target.isContentEditable || nodeName === "TEXTAREA" || nodeName === "INPUT") {
@@ -158,15 +158,34 @@ function Setup_Reload_Links(reload_links)
   }
 }
 
-let reload_links = document.querySelectorAll(REFRESH_LINK_SELECTOR);
+const oppositeGroups = document.querySelectorAll(OPPOSITE_CLASS);
 
-if (reload_links.length > 0) {
-  let spinner_css_node = document.createElement("style");
-  spinner_css_node.textContent = SPINNER_CSS;
-  document.head.appendChild(spinner_css_node);
-
-  Setup_Reload_Links(reload_links);
-
-  // chrome doesn't set the repeat event property on keypress events, have to use keydown
-  document.addEventListener("keydown", Handle_Reload_Keypress, false);
+for (let group of oppositeGroups) {
+  let btnGroup = group.querySelector(BUTTON_GROUP_CLASS_SELECTOR);
+  
+  if (btnGroup == null) {
+    btnGroup = document.createElement('div');
+    btnGroup.classList.add(BUTTON_GROUP_CLASS);
+    group.appendChild(btnGroup);
+  }
+  
+  const refreshLink = document.createElement('a');
+  refreshLink.href = 'javascript:void(0);';
+  refreshLink.classList.add.apply(refreshLink.classList, BUTTON_LINK_CLASSES);
+  refreshLink.setAttribute('data-xf-init', 'tooltip');
+  refreshLink.setAttribute('title', 'Inline Refresh');
+	refreshLink.addEventListener("click", Inline_Reload, false);
+  const refreshIcon = document.createElement('span');
+  refreshIcon.classList.add(REFRESH_CLASS);
+  refreshLink.appendChild(refreshIcon);
+  btnGroup.appendChild(refreshLink);
 }
+
+const spinner_css_node = document.createElement("style");
+spinner_css_node.textContent = SPINNER_CSS;
+document.head.appendChild(spinner_css_node);
+
+window.eval(XENFORO_ACTIVATE_SCRIPT);
+
+// chrome doesn't set the repeat event property on keypress events, have to use keydown
+document.addEventListener("keydown", Handle_Reload_Keypress, false);
