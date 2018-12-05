@@ -2,7 +2,7 @@
 // @name        ResetEra Inline Refresh
 // @description Load new posts in a topic without refreshing the whole page
 // @namespace   com.toadking.resetera.inlinerefresh
-// @version     2.0
+// @version     2.1
 // @grant       none
 // @include     https://www.resetera.com/threads/*
 // @run-at      document-end
@@ -25,6 +25,7 @@ const REFRESH_KEY = "r";
 const SPINNER_CSS = `
 .${REFRESH_CLASS} {
 	font-size: 18px;
+	line-height: 1;
 }
 
 .${REFRESH_CLASS}::before {
@@ -171,7 +172,7 @@ for (let group of oppositeGroups) {
   
   const refreshLink = document.createElement('a');
   refreshLink.href = 'javascript:void(0);';
-  refreshLink.classList.add.apply(refreshLink.classList, BUTTON_LINK_CLASSES);
+  refreshLink.classList.add(...BUTTON_LINK_CLASSES);
   refreshLink.setAttribute('data-xf-init', 'tooltip');
   refreshLink.setAttribute('title', 'Inline Refresh');
 	refreshLink.addEventListener("click", Inline_Reload, false);
