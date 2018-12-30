@@ -2,7 +2,7 @@
 // @name        ResetEra Inline Refresh
 // @description Load new posts in a topic without refreshing the whole page
 // @namespace   com.toadking.resetera.inlinerefresh
-// @version     2.2
+// @version     2.3
 // @grant       none
 // @include     https://www.resetera.com/threads/*
 // @run-at      document-end
@@ -15,7 +15,7 @@ const MESSAGE_LIST_SELECTOR = '[data-lb-id^="thread-"] .block-body';
 const MESSAGE_SELECTOR = `${MESSAGE_LIST_SELECTOR} > .message`;
 const PAGENAV_SELECTOR = ".pageNavWrapper";
 const PAGENAV_GROUP_SELECTOR = ".block-outer:not(.js-threadStatusField)";
-const OPPOSITE_CLASS = `${PAGENAV_GROUP_SELECTOR} .block-outer-main + .block-outer-opposite`;
+const OPPOSITE_CLASS = `${PAGENAV_GROUP_SELECTOR} .block-outer-opposite:first-of-type, ${PAGENAV_GROUP_SELECTOR} .block-outer-main + .block-outer-opposite`;
 const BUTTON_GROUP_CLASS = "buttonGroup";
 const BUTTON_GROUP_CLASS_SELECTOR = `.${BUTTON_GROUP_CLASS}:last-of-type`;
 const BUTTON_LINK_CLASSES = ['button--link', 'button', 'rippleButton'];
